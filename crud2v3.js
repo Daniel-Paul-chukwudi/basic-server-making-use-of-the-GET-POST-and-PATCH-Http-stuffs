@@ -1,6 +1,6 @@
 
 // const { log } = require('console');
-const studentDb = require('./db/database.json');  // calling the database then assigning it to the constant studenteDb
+let studentDb = require('./db/database2.json');  // calling the database then assigning it to the constant studenteDb
 const http=require('http') // calling http like in line 3
 const PORT=8080 // creating the variable PORT and assigning the value if the port to it
 const fs=require("fs") // calling fs like in line 3
@@ -92,12 +92,12 @@ const server= http.createServer((req,res)=>{ // creating a server then asigning 
             const update= JSON.parse(body)
             const id = url.split('/')[2]
             const student = studentDb.find((x)=>x.id===id)
-            console.log(student);
+            // console.log(student);
             //objsect.assign is used to assign data to an object and overides it if it already exists
             // it take two arguments 1 the previous object 2 the new object
             Object.assign(student,update)
-            console.log(student);
-            const index =studentDb.findIndex((e)=> x.id === student.id)
+            // console.log(student);
+            const index =studentDb.findIndex((x)=> x.id === student.id)
             
             if (index !== -1){
                 studentDb[index] = student
@@ -117,6 +117,62 @@ const server= http.createServer((req,res)=>{ // creating a server then asigning 
             })
             
         })
+
+    }else if(url.startsWith("/delete-student") && method==="DELETE" ){
+        let body=''
+        req.on('data',(chunks)=>{
+            body += chunks
+            // console.log(body);
+            
+
+        })
+
+        req.on('end',()=>{
+            // stuff=[1,2,3,4,5]
+            // const target = JSON.parse(body)
+            const id = url.split('/')[2]
+            // const student = studentDb.find((x)=>x.id===id)
+            // console.log(studentDb);
+            // const index =studentDb.findIndex((x)=> x.id === student.id)
+            
+            // console.log(stuff.find((x)=>x==2));
+            // if (stuff.findIndex((x)=>x==2) == true){
+            //     console.log("yes");
+                
+            // }else{
+            //     console.log("no");
+                
+            // }
+            if (studentDb.find((x)=>x.id===id) !== undefined ){
+                const student = studentDb.find((x)=>x.id===id)
+                const index =studentDb.findIndex((x)=> x.id === student.id)
+                studentDb.splice(index,1,0)
+
+                fs.writeFile("./db/database2.json",JSON.stringify(studentDb,null,2),"utf-8",(err,data)=>{
+                if (err){
+                    res.writeHead(500,{"content-type":"type/plain"})
+                    res.end("student delete failed")
+                }else{
+                    res.writeHead(200,{"content-type":"apllication/json"})
+                    res.end(JSON.stringify({ 
+                    message:"successfully deleted",
+                    person: student ,
+                    currentdb:studentDb
+                    }))
+                }
+            })
+            }else{
+                res.writeHead(400,{"content-type":"type/plain"})
+                res.end("student not found")
+            }
+
+            
+            
+            
+            
+
+        })
+
 
     }
 })
